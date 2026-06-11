@@ -1,0 +1,65 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Brand palette */
+  --color-background: oklch(0.07 0 0);
+  --color-surface: oklch(0.12 0 0);
+  --color-card: oklch(0.15 0 0);
+  --color-border: oklch(0.22 0 0);
+  --color-accent: oklch(0.65 0.18 45); /* orange */
+  --color-exact: oklch(0.75 0.16 85); /* amber */
+  --color-success: oklch(0.65 0.16 155); /* green */
+  --color-danger: oklch(0.62 0.18 25); /* red */
+  --color-text: oklch(0.96 0 0);
+  --color-muted: oklch(0.55 0 0);
+
+  /* shadcn token mapping (dark only) */
+  --color-foreground: var(--color-text);
+  --color-card-foreground: var(--color-text);
+  --color-popover: var(--color-card);
+  --color-popover-foreground: var(--color-text);
+  --color-primary: var(--color-accent);
+  --color-primary-foreground: oklch(0.07 0 0);
+  --color-secondary: var(--color-surface);
+  --color-secondary-foreground: var(--color-text);
+  --color-muted-foreground: var(--color-muted);
+  --color-accent-foreground: oklch(0.07 0 0);
+  --color-destructive: var(--color-danger);
+  --color-destructive-foreground: var(--color-text);
+  --color-input: var(--color-border);
+  --color-ring: var(--color-accent);
+
+  --radius-sm: calc(0.75rem - 4px);
+  --radius-md: calc(0.75rem - 2px);
+  --radius-lg: 0.75rem;
+  --radius-xl: calc(0.75rem + 4px);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
