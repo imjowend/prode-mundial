@@ -26,6 +26,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("store: %v", err)
 	}
+	if err := s.SeedIfEmpty(); err != nil {
+		log.Fatalf("seed: %v", err)
+	}
 
 	h := handler.New(s, adminCode)
 

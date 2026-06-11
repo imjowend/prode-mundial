@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      PORT: "8080"
+      ADMIN_CODE: ${ADMIN_CODE}
+      DB_PATH: /data/prode.db
+      ALLOWED_ORIGIN: "*"
+    volumes:
+      - db_data:/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db_data:

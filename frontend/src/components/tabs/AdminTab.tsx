@@ -124,8 +124,8 @@ function AddMatchForm({ onRefetch }: { onRefetch: () => void | Promise<void> }) 
 
       <div className="grid grid-cols-[52px_1fr] gap-2">
         <Input
-          placeholder="🇦🇷"
-          aria-label="Bandera equipo 1"
+          placeholder="ar"
+          aria-label="Código de bandera equipo 1"
           value={flag1}
           onChange={(e) => setFlag1(e.target.value)}
           className="text-center"
@@ -140,8 +140,8 @@ function AddMatchForm({ onRefetch }: { onRefetch: () => void | Promise<void> }) 
 
       <div className="grid grid-cols-[52px_1fr] gap-2">
         <Input
-          placeholder="🇧🇷"
-          aria-label="Bandera equipo 2"
+          placeholder="br"
+          aria-label="Código de bandera equipo 2"
           value={flag2}
           onChange={(e) => setFlag2(e.target.value)}
           className="text-center"

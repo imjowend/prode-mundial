@@ -72,7 +72,7 @@ func (s *Store) GetAllMatches() ([]model.Match, error) {
 	}
 	defer rows.Close()
 
-	var matches []model.Match
+	matches := make([]model.Match, 0)
 	for rows.Next() {
 		var m model.Match
 		var locked int

@@ -1,6 +1,7 @@
 import type { AppData } from '@/types'
 import { USERS } from '@/types'
 import { calcMatchPoints } from '@/lib/scoring'
+import { Flag } from '@/components/Flag'
 
 type TablaTabProps = {
   data: AppData
@@ -91,8 +92,10 @@ export function TablaTab({ data }: TablaTabProps) {
               {playedMatches.map((match) => (
                 <tr key={match.id} className="border-b border-[var(--color-border)] last:border-0">
                   <td className="whitespace-nowrap p-3 text-[var(--color-text)]">
-                    <span aria-hidden="true">{match.flag1}</span> vs{' '}
-                    <span aria-hidden="true">{match.flag2}</span>
+                    <span className="inline-flex items-center gap-1">
+                      <Flag code={match.flag1} className="h-4 w-auto" /> vs{' '}
+                      <Flag code={match.flag2} className="h-4 w-auto" />
+                    </span>
                   </td>
                   <td className="whitespace-nowrap p-3 font-bold text-[var(--color-text)]">
                     {match.score1} – {match.score2}

@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import type { AppData, Match, UserId } from '@/types'
 import { savePrediction } from '@/api'
 import { calcMatchPoints } from '@/lib/scoring'
+import { Flag } from '@/components/Flag'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -170,9 +171,7 @@ function MatchCard({ match, prediction, selectedUser, onRefetch }: MatchCardProp
       <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-start gap-2">
         {/* Team 1 */}
         <div className="flex flex-col items-center gap-1 text-center">
-          <span className="text-4xl leading-none" aria-hidden="true">
-            {match.flag1}
-          </span>
+          <Flag code={match.flag1} />
           <span className="text-sm font-medium text-[var(--color-text)]">{match.team1}</span>
         </div>
 
@@ -233,9 +232,7 @@ function MatchCard({ match, prediction, selectedUser, onRefetch }: MatchCardProp
 
         {/* Team 2 */}
         <div className="flex flex-col items-center gap-1 text-center">
-          <span className="text-4xl leading-none" aria-hidden="true">
-            {match.flag2}
-          </span>
+          <Flag code={match.flag2} />
           <span className="text-sm font-medium text-[var(--color-text)]">{match.team2}</span>
         </div>
       </div>
