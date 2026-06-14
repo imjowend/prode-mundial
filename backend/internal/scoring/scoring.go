@@ -18,7 +18,7 @@ func Outcome(s1, s2 int) string {
 
 func CalcMatchPoints(predS1, predS2, resS1, resS2 int) (points int, pointType string) {
 	if predS1 == resS1 && predS2 == resS2 {
-		return 4, "exact"
+		return 3, "exact"
 	}
 	if Outcome(predS1, predS2) == Outcome(resS1, resS2) {
 		return 1, "outcome"
