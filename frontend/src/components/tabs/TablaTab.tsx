@@ -61,7 +61,7 @@ export function TablaTab({ data }: TablaTabProps) {
           <div className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-[var(--color-exact)]" aria-hidden="true" />
             <span className="text-[var(--color-text)]">
-              <span className="font-semibold">+4 pts</span> — Marcador exacto (gol por gol)
+              <span className="font-semibold">+3 pts</span> — Marcador exacto (gol por gol)
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -123,7 +123,7 @@ export function TablaTab({ data }: TablaTabProps) {
                       <td key={u.id} className={`whitespace-nowrap p-3 font-medium ${color}`}>
                         {pred.score1}–{pred.score2}{' '}
                         <span className="text-xs">
-                          ({points === 4 ? '+4' : points === 1 ? '+1' : '+0'})
+                          ({points === 3 ? '+3' : points === 1 ? '+1' : '+0'})
                         </span>
                       </td>
                     )

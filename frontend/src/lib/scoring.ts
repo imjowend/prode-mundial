@@ -11,7 +11,7 @@ export function calcMatchPoints(
   result: { score1: number; score2: number },
 ): { points: number; type: PointType } {
   if (pred.score1 === result.score1 && pred.score2 === result.score2)
-    return { points: 4, type: 'exact' }
+    return { points: 3, type: 'exact' }
   if (getOutcome(pred.score1, pred.score2) === getOutcome(result.score1, result.score2))
     return { points: 1, type: 'outcome' }
   return { points: 0, type: 'miss' }

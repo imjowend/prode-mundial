@@ -122,7 +122,7 @@ function MatchCard({ match, prediction, selectedUser, onRefetch }: MatchCardProp
       exact: {
         label: 'Marcador exacto',
         color: 'text-[var(--color-exact)]',
-        pts: '+4 pts',
+        pts: '+3 pts',
       },
       outcome: {
         label: 'Resultado correcto',
@@ -137,7 +137,7 @@ function MatchCard({ match, prediction, selectedUser, onRefetch }: MatchCardProp
       <div className="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
         <span className={`text-xs font-medium ${info.color}`}>{info.label}</span>
         <span className={`text-sm font-bold ${info.color}`}>
-          {points === 4 ? '+4 pts' : points === 1 ? '+1 pt' : '+0 pts'}
+          {points === 3 ? '+3 pts' : points === 1 ? '+1 pt' : '+0 pts'}
         </span>
       </div>
     )
