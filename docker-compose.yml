@@ -1,6 +1,7 @@
 services:
   backend:
     build: ./backend
+    container_name: prode-backend
     environment:
       PORT: "8080"
       ADMIN_CODE: ${ADMIN_CODE}
@@ -8,15 +9,19 @@ services:
       ALLOWED_ORIGIN: "*"
     volumes:
       - db_data:/data
-    restart: unless-stopped
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prode.rule=Host(`prode-api.joaquinvasquez.com`)"
+      - "traefik.http.routers.prode.entrypoints=websecure"
+      - "traefik.http.routers.prode.tls.certresolver=cloudflare"
+      - "traefik.http.services.prode.loadbalancer.server.port=8080"
     restart: unless-stopped
 
 volumes:
   db_data:
+
+networks:
+  web:
+    external: true
