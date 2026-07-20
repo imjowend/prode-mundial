@@ -1,7 +1,7 @@
 services:
-  backend:
+  prode-api:
     build: ./backend
-    container_name: prode-backend
+    container_name: prode-api
     environment:
       PORT: "8080"
       ADMIN_CODE: ${ADMIN_CODE}
@@ -13,10 +13,13 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prode.rule=Host(`prode-api.joaquinvasquez.com`)"
-      - "traefik.http.routers.prode.entrypoints=websecure"
-      - "traefik.http.routers.prode.tls.certresolver=cloudflare"
-      - "traefik.http.services.prode.loadbalancer.server.port=8080"
+      - "traefik.http.routers.prode-api.rule=Host(`prode-api.joaquinvasquez.com`)"
+      - "traefik.http.routers.prode-api.entrypoints=websecure"
+      - "traefik.http.routers.prode-api.tls.certresolver=cloudflare"
+      - "traefik.http.services.prode-api.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.prode-api-ratelimit.ratelimit.average=10"
+      - "traefik.http.middlewares.prode-api-ratelimit.ratelimit.burst=20"
+      - "traefik.http.routers.prode-api.middlewares=prode-api-ratelimit"
     restart: unless-stopped
 
 volumes:
