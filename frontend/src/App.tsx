@@ -28,7 +28,7 @@ function App() {
     return isUserId(stored) ? stored : null
   })
   const [activeTab, setActiveTab] = useState<TabKey>('predicciones')
-  const [isAdminAuth, setIsAdminAuth] = useState(false)
+  const [adminCode, setAdminCode] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     try {
@@ -87,8 +87,8 @@ function App() {
           {activeTab === 'admin' && (
             <AdminTab
               data={data}
-              isAdminAuth={isAdminAuth}
-              onAuth={setIsAdminAuth}
+              adminCode={adminCode}
+              onAuth={setAdminCode}
               onRefetch={loadData}
             />
           )}

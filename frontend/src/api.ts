@@ -1,7 +1,6 @@
 import type { AppData, Match, UserId } from '@/types'
 
 export const API_URL = import.meta.env.VITE_API_URL as string
-export const ADMIN_CODE = 'mundial26'
 
 async function ensureOk(res: Response): Promise<Response> {
   if (!res.ok) {

@@ -3,15 +3,15 @@ import { Lock, Unlock, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import type { AppData, Match, Stage } from '@/types'
-import { ADMIN_CODE, addMatch, updateMatch, deleteMatch } from '@/api'
+import { addMatch, updateMatch, deleteMatch } from '@/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 
 type AdminTabProps = {
   data: AppData
-  isAdminAuth: boolean
-  onAuth: (ok: boolean) => void
+  adminCode: string | null
+  onAuth: (code: string | null) => void
   onRefetch: () => void | Promise<void>
 }
 
@@ -23,29 +23,29 @@ const STAGES: { value: Stage; label: string }[] = [
   { value: 'final', label: 'Final' },
 ]
 
-export function AdminTab({ data, isAdminAuth, onAuth, onRefetch }: AdminTabProps) {
-  if (!isAdminAuth) {
+function isAuthError(err: unknown): boolean {
+  return (err as { status?: number } | null)?.status === 401
+}
+
+export function AdminTab({ data, adminCode, onAuth, onRefetch }: AdminTabProps) {
+  if (!adminCode) {
     return <AdminLogin onAuth={onAuth} />
   }
   return (
     <div className="flex flex-col gap-6 py-4">
-      <AddMatchForm onRefetch={onRefetch} />
+      <AddMatchForm adminCode={adminCode} onAuth={onAuth} onRefetch={onRefetch} />
       <Separator />
-      <ManageMatches matches={data.matches} onRefetch={onRefetch} />
+      <ManageMatches matches={data.matches} adminCode={adminCode} onAuth={onAuth} onRefetch={onRefetch} />
     </div>
   )
 }
 
-function AdminLogin({ onAuth }: { onAuth: (ok: boolean) => void }) {
+function AdminLogin({ onAuth }: { onAuth: (code: string | null) => void }) {
   const [code, setCode] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (code === ADMIN_CODE) {
-      onAuth(true)
-    } else {
-      toast.error('❌ Código incorrecto')
-    }
+    onAuth(code)
   }
 
   return (
@@ -69,7 +69,15 @@ function AdminLogin({ onAuth }: { onAuth: (ok: boolean) => void }) {
   )
 }
 
-function AddMatchForm({ onRefetch }: { onRefetch: () => void | Promise<void> }) {
+function AddMatchForm({
+  adminCode,
+  onAuth,
+  onRefetch,
+}: {
+  adminCode: string
+  onAuth: (code: string | null) => void
+  onRefetch: () => void | Promise<void>
+}) {
   const [flag1, setFlag1] = useState('')
   const [team1, setTeam1] = useState('')
   const [flag2, setFlag2] = useState('')
@@ -91,7 +99,7 @@ function AddMatchForm({ onRefetch }: { onRefetch: () => void | Promise<void> }) 
     }
     setBusy(true)
     try {
-      await addMatch(ADMIN_CODE, {
+      await addMatch(adminCode, {
         team1: team1.trim(),
         flag1: flag1.trim(),
         team2: team2.trim(),
@@ -111,8 +119,13 @@ function AddMatchForm({ onRefetch }: { onRefetch: () => void | Promise<void> }) 
       setTime('')
       setGroup('')
       setStage('groups')
-    } catch {
-      toast.error('❌ Error al agregar')
+    } catch (err) {
+      if (isAuthError(err)) {
+        toast.error('❌ Código incorrecto')
+        onAuth(null)
+      } else {
+        toast.error('❌ Error al agregar')
+      }
     } finally {
       setBusy(false)
     }
@@ -199,9 +212,13 @@ function AddMatchForm({ onRefetch }: { onRefetch: () => void | Promise<void> }) 
 
 function ManageMatches({
   matches,
+  adminCode,
+  onAuth,
   onRefetch,
 }: {
   matches: Match[]
+  adminCode: string
+  onAuth: (code: string | null) => void
   onRefetch: () => void | Promise<void>
 }) {
   return (
@@ -211,7 +228,13 @@ function ManageMatches({
         <p className="text-sm text-[var(--color-muted)]">No hay partidos cargados.</p>
       ) : (
         matches.map((match) => (
-          <ManageMatchRow key={match.id} match={match} onRefetch={onRefetch} />
+          <ManageMatchRow
+            key={match.id}
+            match={match}
+            adminCode={adminCode}
+            onAuth={onAuth}
+            onRefetch={onRefetch}
+          />
         ))
       )}
     </section>
@@ -220,9 +243,13 @@ function ManageMatches({
 
 function ManageMatchRow({
   match,
+  adminCode,
+  onAuth,
   onRefetch,
 }: {
   match: Match
+  adminCode: string
+  onAuth: (code: string | null) => void
   onRefetch: () => void | Promise<void>
 }) {
   const hasResult = match.score1 !== null && match.score2 !== null
@@ -236,10 +263,15 @@ function ManageMatchRow({
   async function toggleLock() {
     setBusy(true)
     try {
-      await updateMatch(ADMIN_CODE, match.id, { locked: !match.locked })
+      await updateMatch(adminCode, match.id, { locked: !match.locked })
       await onRefetch()
-    } catch {
-      toast.error('❌ Error')
+    } catch (err) {
+      if (isAuthError(err)) {
+        toast.error('❌ Código incorrecto')
+        onAuth(null)
+      } else {
+        toast.error('❌ Error')
+      }
     } finally {
       setBusy(false)
     }
@@ -248,11 +280,16 @@ function ManageMatchRow({
   async function handleDelete() {
     setBusy(true)
     try {
-      await deleteMatch(ADMIN_CODE, match.id)
+      await deleteMatch(adminCode, match.id)
       await onRefetch()
       toast.success('🗑️ Eliminado')
-    } catch {
-      toast.error('❌ Error al eliminar')
+    } catch (err) {
+      if (isAuthError(err)) {
+        toast.error('❌ Código incorrecto')
+        onAuth(null)
+      } else {
+        toast.error('❌ Error al eliminar')
+      }
     } finally {
       setBusy(false)
     }
@@ -267,14 +304,19 @@ function ManageMatchRow({
     }
     setBusy(true)
     try {
-      await updateMatch(ADMIN_CODE, match.id, { score1: n1, score2: n2 })
+      await updateMatch(adminCode, match.id, { score1: n1, score2: n2 })
       await onRefetch()
       toast.success('⚽ Resultado guardado')
       setEditing(false)
       setS1('')
       setS2('')
-    } catch {
-      toast.error('❌ Error al guardar')
+    } catch (err) {
+      if (isAuthError(err)) {
+        toast.error('❌ Código incorrecto')
+        onAuth(null)
+      } else {
+        toast.error('❌ Error al guardar')
+      }
     } finally {
       setBusy(false)
     }

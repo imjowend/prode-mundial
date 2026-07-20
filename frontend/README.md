@@ -1,94 +1,76 @@
 # Prode Mundial 2026 — Frontend
 
-App de predicciones del Mundial 2026 con tema oscuro. Construido con Vite + React + TypeScript + Tailwind CSS v4 + shadcn/ui.
-
-Tres usuarios (Joaquín, Josué, Michael) cargan sus pronósticos de marcadores. Se otorgan **+4 puntos** por marcador exacto y **+1 punto** por acertar el resultado (G/E/P).
-
-## Stack
-
-- Vite 8 (Rolldown) + plugin `@tailwindcss/vite`
-- React 19.2 + TypeScript 5.9 (strict)
-- Tailwind CSS v4 (CSS-first, sin `tailwind.config.js` — todo en `src/index.css` vía `@theme`)
-- shadcn/ui (estilo new-york)
-- Sonner (toasts) + lucide-react (íconos)
-- pnpm
+SPA en Vite + React que muestra los partidos del Mundial 2026, permite a cada usuario
+cargar sus pronósticos de marcador, ver la tabla de posiciones y administrar los
+partidos desde una pestaña de admin. Consume la API del backend en Go.
 
 ## Requisitos
 
-- Node.js 22.12+
-- pnpm
-
-## Setup
-
-Este proyecto fue scaffolded con:
-
-```bash
-cd frontend
-pnpm create vite@latest . -- --template react-ts
-pnpm install
-pnpm add @tailwindcss/vite
-pnpm add sonner lucide-react clsx tw-animate-css tailwind-merge class-variance-authority
-pnpm dlx shadcn@latest init   # New York / Zinc / CSS variables
-pnpm dlx shadcn@latest add button input badge card tabs separator
-```
-
-> Nota: los componentes de `src/components/ui` ya están incluidos en el repo, listos para usar.
+- **Node.js 20.19+ o 22.12+** (requerido por Vite 8). La imagen Docker buildea con
+  `node:23-alpine`.
+  <!-- TODO: confirmar versión exacta; no hay campo `engines` en package.json -->
+- **pnpm** (hay `pnpm-lock.yaml` en el repo)
 
 ## Variables de entorno
 
-Copiá `.env.example` a `.env` y configurá:
-
-| Variable       | Descripción                               | Ejemplo                 |
-| -------------- | ----------------------------------------- | ----------------------- |
-| `VITE_API_URL` | URL base del backend (Go). **Requerida.** | `http://localhost:8080` |
+| Variable       | Requerida | Propósito                                                       |
+|----------------|-----------|-----------------------------------------------------------------|
+| `VITE_API_URL` | sí        | URL base del backend. El cliente arma las llamadas como `${VITE_API_URL}/api/...` |
 
 ```bash
-cp .env.example .env
+cp .env.example .env    # VITE_API_URL=http://localhost:8080
 ```
 
-## Comandos
+Si `VITE_API_URL` queda vacío, las llamadas usan rutas relativas (`/api/...`), pensadas
+para que un proxy externo las redirija al backend.
+
+## Correr en local
 
 ```bash
-pnpm dev      # servidor de desarrollo (HMR)
-pnpm build    # build de producción a /dist
-pnpm preview  # previsualizar el build
-pnpm lint     # eslint
+pnpm install
+pnpm dev        # servidor de desarrollo (Vite, HMR)
 ```
 
-Corré todo junto:
+| Comando        | Descripción                     |
+|----------------|---------------------------------|
+| `pnpm dev`     | Servidor de desarrollo          |
+| `pnpm build`   | Build de producción a `/dist`   |
+| `pnpm preview` | Previsualizar el build          |
+| `pnpm lint`    | Linter (ESLint)                 |
 
-```bash
-cd frontend && pnpm install && pnpm dev
-```
+## Cómo pega al backend
+
+Este proyecto **no usa** rewrites de Next.js. El destino del backend se resuelve por
+`VITE_API_URL`. Hay dos escenarios de deploy soportados:
+
+- **Vercel:** `vercel.json` define un rewrite de `/api/:path*` →
+  `https://prode-api.joaquinvasquez.com/api/:path*` (más un fallback SPA a `/`).
+- **Docker + nginx:** el `Dockerfile` buildea con `VITE_API_URL=""` (URLs relativas) y
+  `nginx.conf` proxea `location /api/` → `http://backend:8080`, sirviendo la SPA para
+  el resto de las rutas.
+
+La pestaña de admin pide un código que el usuario tipea en el login (`AdminLogin`,
+sin persistir entre refreshes) y que se envía en cada mutación; el backend es la
+única fuente de verdad que lo valida (`ADMIN_CODE` en su `.env`), respondiendo `401`
+si es incorrecto.
+
+## Deploy
+
+Deployado en **Vercel** (`prode-mundial-gules.vercel.app`). Configurar `VITE_API_URL`
+como variable de entorno de build en Vercel apuntando al backend, o dejar que el
+rewrite de `vercel.json` resuelva `/api`.
 
 ## Estructura
 
 ```
 src/
-  types.ts                  # tipos y constante USERS
-  api.ts                    # cliente del backend + ADMIN_CODE
-  App.tsx                   # estado raíz, fetch, tabs, modal de usuario
-  main.tsx
-  index.css                 # tema Tailwind v4
-  lib/
-    utils.ts                # cn()
-    scoring.ts              # lógica de puntaje (exacto / resultado)
+  api.ts                 → cliente HTTP del backend
+  types.ts               → tipos + constante de usuarios
+  App.tsx                → estado raíz, fetch, tabs, modal de usuario
+  index.css              → tema Tailwind v4 (CSS-first)
+  lib/                   → utils (cn) + scoring (espejo del cálculo del backend)
   components/
-    Header.tsx
-    TabBar.tsx
-    UserSelectModal.tsx
-    SkeletonCards.tsx
-    tabs/
-      PrediccionesTab.tsx
-      TablaTab.tsx
-      AdminTab.tsx
-    ui/                     # componentes shadcn
+    Header, TabBar, UserSelectModal, SkeletonCards
+    tabs/                → PrediccionesTab, TablaTab, AdminTab
+    ui/                  → componentes shadcn/ui
 ```
-
-## Admin
-
-La pestaña **Admin** pide un código (cliente): `mundial26`. El backend valida el mismo código en cada mutación.
-
-## Deploy en Vercel
-
-`vercel.json` incluye un rewrite SPA. Configurá `VITE_API_URL` en las variables de entorno del proyecto en Vercel apuntando al backend desplegado.
