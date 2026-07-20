@@ -20,7 +20,6 @@ func main() {
 	port := getenv("PORT", "8080")
 	adminCode := getenv("ADMIN_CODE", "")
 	dbPath := getenv("DB_PATH", "./prode.db")
-	allowedOrigin := getenv("ALLOWED_ORIGIN", "*")
 
 	s, err := store.New(dbPath)
 	if err != nil {
@@ -36,7 +35,6 @@ func main() {
 	h.Routes(mux)
 
 	var srv http.Handler = mux
-	srv = corsMiddleware(allowedOrigin, srv)
 	srv = loggerMiddleware(srv)
 	srv = recovererMiddleware(srv)
 
@@ -52,21 +50,6 @@ func getenv(key, fallback string) string {
 		return v
 	}
 	return fallback
-}
-
-// corsMiddleware adds CORS headers and handles preflight OPTIONS requests.
-func corsMiddleware(allowedOrigin string, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
 }
 
 // loggerMiddleware logs method, path, status and duration for each request.

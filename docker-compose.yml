@@ -4,9 +4,9 @@ services:
     container_name: prode-api
     environment:
       PORT: "8080"
-      ADMIN_CODE: ${ADMIN_CODE}
       DB_PATH: /data/prode.db
-      ALLOWED_ORIGIN: "*"
+    env_file:
+      - ./backend/.env
     volumes:
       - db_data:/data
     networks:
@@ -19,7 +19,10 @@ services:
       - "traefik.http.services.prode-api.loadbalancer.server.port=8080"
       - "traefik.http.middlewares.prode-api-ratelimit.ratelimit.average=10"
       - "traefik.http.middlewares.prode-api-ratelimit.ratelimit.burst=20"
-      - "traefik.http.routers.prode-api.middlewares=prode-api-ratelimit"
+      - "traefik.http.middlewares.prode-api-cors.headers.accesscontrolalloworiginlist=https://prode-mundial-gules.vercel.app"
+      - "traefik.http.middlewares.prode-api-cors.headers.accesscontrolallowmethods=GET,POST,PATCH,DELETE,OPTIONS"
+      - "traefik.http.middlewares.prode-api-cors.headers.accesscontrolallowheaders=Content-Type"
+      - "traefik.http.routers.prode-api.middlewares=prode-api-cors,prode-api-ratelimit"
     restart: unless-stopped
 
 volumes:
