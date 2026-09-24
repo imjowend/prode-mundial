@@ -77,15 +77,25 @@ func (h *Handler) getData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type predEntry struct {
-		Score1  int    `json:"score1"`
-		Score2  int    `json:"score2"`
-		SavedAt string `json:"savedAt"`
+		Type      string `json:"type,omitempty"`
+		Score1    *int   `json:"score1,omitempty"`
+		Score2    *int   `json:"score2,omitempty"`
+		Outcome90 string `json:"outcome90,omitempty"`
+		Qualifier string `json:"qualifier,omitempty"`
+		SavedAt   string `json:"savedAt"`
 	}
 	predsOut := make(map[string]map[string]predEntry, len(allPreds))
 	for userID, byMatch := range allPreds {
 		predsOut[userID] = make(map[string]predEntry, len(byMatch))
 		for matchID, p := range byMatch {
-			predsOut[userID][matchID] = predEntry{Score1: p.Score1, Score2: p.Score2, SavedAt: p.SavedAt}
+			predsOut[userID][matchID] = predEntry{
+				Type:      p.Type,
+				Score1:    p.Score1,
+				Score2:    p.Score2,
+				Outcome90: p.Outcome90,
+				Qualifier: p.Qualifier,
+				SavedAt:   p.SavedAt,
+			}
 		}
 	}
 
@@ -102,10 +112,13 @@ func (h *Handler) getData(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) postPrediction(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		UserID  string `json:"userId"`
-		MatchID string `json:"matchId"`
-		Score1  *int   `json:"score1"`
-		Score2  *int   `json:"score2"`
+		UserID    string `json:"userId"`
+		MatchID   string `json:"matchId"`
+		Type      string `json:"type"` // "exact" | "outcome_90" | "qualifier"
+		Score1    *int   `json:"score1"`
+		Score2    *int   `json:"score2"`
+		Outcome90 string `json:"outcome90"`
+		Qualifier string `json:"qualifier"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		errJSON(w, http.StatusBadRequest, "invalid JSON body")
@@ -118,14 +131,6 @@ func (h *Handler) postPrediction(w http.ResponseWriter, r *http.Request) {
 	}
 	if body.MatchID == "" {
 		errJSON(w, http.StatusBadRequest, "matchId is required")
-		return
-	}
-	if body.Score1 == nil || body.Score2 == nil {
-		errJSON(w, http.StatusBadRequest, "score1 and score2 are required")
-		return
-	}
-	if *body.Score1 < 0 || *body.Score2 < 0 {
-		errJSON(w, http.StatusBadRequest, "scores must be >= 0")
 		return
 	}
 
@@ -143,11 +148,42 @@ func (h *Handler) postPrediction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate based on prediction type
+	if match.Stage == "groups" || body.Type == "exact" || body.Type == "" {
+		if body.Score1 == nil || body.Score2 == nil {
+			errJSON(w, http.StatusBadRequest, "score1 and score2 are required")
+			return
+		}
+		if *body.Score1 < 0 || *body.Score2 < 0 {
+			errJSON(w, http.StatusBadRequest, "scores must be >= 0")
+			return
+		}
+		if body.Type == "" && match.Stage != "groups" {
+			body.Type = "exact"
+		}
+	} else if body.Type == "outcome_90" {
+		if body.Outcome90 != "team1" && body.Outcome90 != "draw" && body.Outcome90 != "team2" {
+			errJSON(w, http.StatusBadRequest, "outcome90 must be team1, draw, or team2")
+			return
+		}
+	} else if body.Type == "qualifier" {
+		if body.Qualifier != "team1" && body.Qualifier != "team2" {
+			errJSON(w, http.StatusBadRequest, "qualifier must be team1 or team2")
+			return
+		}
+	} else {
+		errJSON(w, http.StatusBadRequest, "invalid prediction type")
+		return
+	}
+
 	if err := h.store.UpsertPrediction(model.Prediction{
-		UserID:  body.UserID,
-		MatchID: body.MatchID,
-		Score1:  *body.Score1,
-		Score2:  *body.Score2,
+		UserID:    body.UserID,
+		MatchID:   body.MatchID,
+		Type:      body.Type,
+		Score1:    body.Score1,
+		Score2:    body.Score2,
+		Outcome90: body.Outcome90,
+		Qualifier: body.Qualifier,
 	}); err != nil {
 		errJSON(w, http.StatusInternalServerError, "internal server error")
 		return
@@ -225,10 +261,14 @@ func (h *Handler) updateMatch(w http.ResponseWriter, r *http.Request) {
 	matchID := r.PathValue("matchId")
 
 	var body struct {
-		AdminCode string `json:"adminCode"`
-		Score1    *int   `json:"score1"`
-		Score2    *int   `json:"score2"`
-		Locked    *bool  `json:"locked"`
+		AdminCode string  `json:"adminCode"`
+		Score1    *int    `json:"score1"`
+		Score2    *int    `json:"score2"`
+		Score1_90 *int    `json:"score1_90"`
+		Score2_90 *int    `json:"score2_90"`
+		Winner    *string `json:"winner"`
+		Notes     *string `json:"notes"`
+		Locked    *bool   `json:"locked"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		errJSON(w, http.StatusBadRequest, "invalid JSON body")
@@ -248,7 +288,7 @@ func (h *Handler) updateMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updated, err := h.store.UpdateMatch(matchID, body.Score1, body.Score2, body.Locked)
+	updated, err := h.store.UpdateMatch(matchID, body.Score1, body.Score2, body.Score1_90, body.Score2_90, body.Winner, body.Notes, body.Locked)
 	if err != nil {
 		errJSON(w, http.StatusInternalServerError, "internal server error")
 		return

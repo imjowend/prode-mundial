@@ -1,7 +1,8 @@
-export type TabKey = 'predicciones' | 'tabla' | 'admin'
+export type TabKey = 'predicciones' | 'fase-final' | 'tabla' | 'admin'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'predicciones', label: 'Predicciones' },
+  { key: 'fase-final', label: 'Fase Final' },
   { key: 'tabla', label: 'Tabla' },
   { key: 'admin', label: 'Admin' },
 ]
@@ -27,8 +28,8 @@ export function TabBar({ activeTab, onChange }: TabBarProps) {
             onClick={() => onChange(tab.key)}
             className={
               active
-                ? 'flex-1 border-b-2 border-[var(--color-accent)] px-3 py-3 text-sm font-medium text-[var(--color-text)] transition-colors'
-                : 'flex-1 border-b-2 border-transparent px-3 py-3 text-sm font-medium text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]'
+                ? 'flex-1 border-b-2 border-[var(--color-accent)] px-2 py-3 text-sm font-medium text-[var(--color-text)] transition-colors'
+                : 'flex-1 border-b-2 border-transparent px-2 py-3 text-sm font-medium text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]'
             }
           >
             {tab.label}

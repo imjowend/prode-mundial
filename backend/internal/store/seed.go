@@ -113,31 +113,318 @@ var groupStage = []seedMatch{
 	{"Croacia", "hr", "Ghana", "gh", "2026-06-27", "18:00", "L"},
 }
 
-// SeedIfEmpty inserta los 72 partidos de fase de grupos si la BD está vacía.
+type seedKnockoutMatch struct {
+	Team1, Flag1, Team2, Flag2, Date, Time, Stage string
+	Score1, Score2                                *int
+	Score1_90, Score2_90                          *int
+	Winner                                        string
+	Notes                                         string
+}
+
+func intPtr(n int) *int {
+	return &n
+}
+
+var knockoutStage = []seedKnockoutMatch{
+	// ── Dieciseisavos (Round of 32) ─────────────────────────────────────────
+	{
+		Team1: "Sudáfrica", Flag1: "za", Team2: "Canadá", Flag2: "ca",
+		Date: "2026-06-28", Time: "12:00", Stage: "round32",
+		Score1: intPtr(0), Score2: intPtr(1),
+		Score1_90: intPtr(0), Score2_90: intPtr(1),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "Alemania", Flag1: "de", Team2: "Paraguay", Flag2: "py",
+		Date: "2026-06-29", Time: "16:30", Stage: "round32",
+		Score1: intPtr(1), Score2: intPtr(1),
+		Score1_90: intPtr(1), Score2_90: intPtr(1),
+		Winner: "team2", Notes: "pen. 3-4",
+	},
+	{
+		Team1: "Países Bajos", Flag1: "nl", Team2: "Marruecos", Flag2: "ma",
+		Date: "2026-06-29", Time: "19:00", Stage: "round32",
+		Score1: intPtr(1), Score2: intPtr(1),
+		Score1_90: intPtr(1), Score2_90: intPtr(1),
+		Winner: "team2", Notes: "pen. 2-3",
+	},
+	{
+		Team1: "Brasil", Flag1: "br", Team2: "Japón", Flag2: "jp",
+		Date: "2026-06-29", Time: "12:00", Stage: "round32",
+		Score1: intPtr(2), Score2: intPtr(1),
+		Score1_90: intPtr(2), Score2_90: intPtr(1),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Francia", Flag1: "fr", Team2: "Suecia", Flag2: "se",
+		Date: "2026-06-30", Time: "17:00", Stage: "round32",
+		Score1: intPtr(3), Score2: intPtr(0),
+		Score1_90: intPtr(3), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Costa de Marfil", Flag1: "ci", Team2: "Noruega", Flag2: "no",
+		Date: "2026-06-30", Time: "12:00", Stage: "round32",
+		Score1: intPtr(1), Score2: intPtr(2),
+		Score1_90: intPtr(1), Score2_90: intPtr(2),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "México", Flag1: "mx", Team2: "Ecuador", Flag2: "ec",
+		Date: "2026-06-30", Time: "19:00", Stage: "round32",
+		Score1: intPtr(2), Score2: intPtr(0),
+		Score1_90: intPtr(2), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Inglaterra", Flag1: "gb-eng", Team2: "RD Congo", Flag2: "cd",
+		Date: "2026-07-01", Time: "12:00", Stage: "round32",
+		Score1: intPtr(2), Score2: intPtr(1),
+		Score1_90: intPtr(2), Score2_90: intPtr(1),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "EE.UU.", Flag1: "us", Team2: "Bosnia y Herzegovina", Flag2: "ba",
+		Date: "2026-07-01", Time: "17:00", Stage: "round32",
+		Score1: intPtr(2), Score2: intPtr(0),
+		Score1_90: intPtr(2), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Bélgica", Flag1: "be", Team2: "Senegal", Flag2: "sn",
+		Date: "2026-07-01", Time: "13:00", Stage: "round32",
+		Score1: intPtr(3), Score2: intPtr(2),
+		Score1_90: intPtr(2), Score2_90: intPtr(2),
+		Winner: "team1", Notes: "t.e. 3-2",
+	},
+	{
+		Team1: "Portugal", Flag1: "pt", Team2: "Croacia", Flag2: "hr",
+		Date: "2026-07-02", Time: "19:00", Stage: "round32",
+		Score1: intPtr(2), Score2: intPtr(1),
+		Score1_90: intPtr(2), Score2_90: intPtr(1),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "España", Flag1: "es", Team2: "Austria", Flag2: "at",
+		Date: "2026-07-02", Time: "12:00", Stage: "round32",
+		Score1: intPtr(3), Score2: intPtr(0),
+		Score1_90: intPtr(3), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Suiza", Flag1: "ch", Team2: "Argelia", Flag2: "dz",
+		Date: "2026-07-02", Time: "20:00", Stage: "round32",
+		Score1: intPtr(2), Score2: intPtr(0),
+		Score1_90: intPtr(2), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Argentina", Flag1: "ar", Team2: "Cabo Verde", Flag2: "cv",
+		Date: "2026-07-03", Time: "18:00", Stage: "round32",
+		Score1: intPtr(3), Score2: intPtr(2),
+		Score1_90: intPtr(1), Score2_90: intPtr(1),
+		Winner: "team1", Notes: "t.e. 3-2",
+	},
+	{
+		Team1: "Colombia", Flag1: "co", Team2: "Ghana", Flag2: "gh",
+		Date: "2026-07-03", Time: "20:30", Stage: "round32",
+		Score1: intPtr(1), Score2: intPtr(0),
+		Score1_90: intPtr(1), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Australia", Flag1: "au", Team2: "Egipto", Flag2: "eg",
+		Date: "2026-07-03", Time: "13:00", Stage: "round32",
+		Score1: intPtr(1), Score2: intPtr(1),
+		Score1_90: intPtr(1), Score2_90: intPtr(1),
+		Winner: "team2", Notes: "pen. 2-4",
+	},
+
+	// ── Octavos (Round of 16) ───────────────────────────────────────────────
+	{
+		Team1: "Paraguay", Flag1: "py", Team2: "Francia", Flag2: "fr",
+		Date: "2026-07-04", Time: "17:00", Stage: "round16",
+		Score1: intPtr(0), Score2: intPtr(1),
+		Score1_90: intPtr(0), Score2_90: intPtr(1),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "Canadá", Flag1: "ca", Team2: "Marruecos", Flag2: "ma",
+		Date: "2026-07-04", Time: "12:00", Stage: "round16",
+		Score1: intPtr(0), Score2: intPtr(3),
+		Score1_90: intPtr(0), Score2_90: intPtr(3),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "Brasil", Flag1: "br", Team2: "Noruega", Flag2: "no",
+		Date: "2026-07-05", Time: "16:00", Stage: "round16",
+		Score1: intPtr(1), Score2: intPtr(2),
+		Score1_90: intPtr(1), Score2_90: intPtr(2),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "México", Flag1: "mx", Team2: "Inglaterra", Flag2: "gb-eng",
+		Date: "2026-07-05", Time: "18:00", Stage: "round16",
+		Score1: intPtr(2), Score2: intPtr(3),
+		Score1_90: intPtr(2), Score2_90: intPtr(3),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "Portugal", Flag1: "pt", Team2: "España", Flag2: "es",
+		Date: "2026-07-06", Time: "14:00", Stage: "round16",
+		Score1: intPtr(0), Score2: intPtr(1),
+		Score1_90: intPtr(0), Score2_90: intPtr(1),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "EE.UU.", Flag1: "us", Team2: "Bélgica", Flag2: "be",
+		Date: "2026-07-06", Time: "17:00", Stage: "round16",
+		Score1: intPtr(1), Score2: intPtr(4),
+		Score1_90: intPtr(1), Score2_90: intPtr(4),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "Argentina", Flag1: "ar", Team2: "Egipto", Flag2: "eg",
+		Date: "2026-07-07", Time: "12:00", Stage: "round16",
+		Score1: intPtr(3), Score2: intPtr(2),
+		Score1_90: intPtr(3), Score2_90: intPtr(2),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Suiza", Flag1: "ch", Team2: "Colombia", Flag2: "co",
+		Date: "2026-07-07", Time: "13:00", Stage: "round16",
+		Score1: intPtr(0), Score2: intPtr(0),
+		Score1_90: intPtr(0), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "pen. 4-3",
+	},
+
+	// ── Cuartos de Final (Quarter-finals) ────────────────────────────────────
+	{
+		Team1: "Francia", Flag1: "fr", Team2: "Marruecos", Flag2: "ma",
+		Date: "2026-07-09", Time: "16:00", Stage: "quarters",
+		Score1: intPtr(2), Score2: intPtr(0),
+		Score1_90: intPtr(2), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "España", Flag1: "es", Team2: "Bélgica", Flag2: "be",
+		Date: "2026-07-10", Time: "12:00", Stage: "quarters",
+		Score1: intPtr(2), Score2: intPtr(1),
+		Score1_90: intPtr(2), Score2_90: intPtr(1),
+		Winner: "team1", Notes: "",
+	},
+	{
+		Team1: "Noruega", Flag1: "no", Team2: "Inglaterra", Flag2: "gb-eng",
+		Date: "2026-07-11", Time: "17:00", Stage: "quarters",
+		Score1: intPtr(1), Score2: intPtr(2),
+		Score1_90: intPtr(1), Score2_90: intPtr(1),
+		Winner: "team2", Notes: "t.e. 1-2",
+	},
+	{
+		Team1: "Argentina", Flag1: "ar", Team2: "Suiza", Flag2: "ch",
+		Date: "2026-07-11", Time: "20:00", Stage: "quarters",
+		Score1: intPtr(3), Score2: intPtr(1),
+		Score1_90: intPtr(1), Score2_90: intPtr(1),
+		Winner: "team1", Notes: "t.e. 3-1",
+	},
+
+	// ── Semifinales (Semi-finals) ───────────────────────────────────────────
+	{
+		Team1: "Francia", Flag1: "fr", Team2: "España", Flag2: "es",
+		Date: "2026-07-14", Time: "14:00", Stage: "semis",
+		Score1: intPtr(0), Score2: intPtr(2),
+		Score1_90: intPtr(0), Score2_90: intPtr(2),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "Inglaterra", Flag1: "gb-eng", Team2: "Argentina", Flag2: "ar",
+		Date: "2026-07-15", Time: "15:00", Stage: "semis",
+		Score1: intPtr(1), Score2: intPtr(2),
+		Score1_90: intPtr(1), Score2_90: intPtr(2),
+		Winner: "team2", Notes: "",
+	},
+
+	// ── Tercer Puesto & Final ────────────────────────────────────────────────
+	{
+		Team1: "Francia", Flag1: "fr", Team2: "Inglaterra", Flag2: "gb-eng",
+		Date: "2026-07-18", Time: "17:00", Stage: "third_place",
+		Score1: intPtr(4), Score2: intPtr(6),
+		Score1_90: intPtr(4), Score2_90: intPtr(6),
+		Winner: "team2", Notes: "",
+	},
+	{
+		Team1: "España", Flag1: "es", Team2: "Argentina", Flag2: "ar",
+		Date: "2026-07-19", Time: "15:00", Stage: "final",
+		Score1: intPtr(1), Score2: intPtr(0),
+		Score1_90: intPtr(0), Score2_90: intPtr(0),
+		Winner: "team1", Notes: "t.e. 1-0",
+	},
+}
+
+// SeedIfEmpty inserta los 72 partidos de fase de grupos si la BD está vacía y los partidos de eliminación directa si faltan.
 func (s *Store) SeedIfEmpty() error {
 	matches, err := s.GetAllMatches()
 	if err != nil {
 		return err
 	}
-	if len(matches) > 0 {
-		return nil
+	if len(matches) == 0 {
+		for _, m := range groupStage {
+			id, err := newUUID()
+			if err != nil {
+				return err
+			}
+			if err := s.CreateMatch(model.Match{
+				ID:    id,
+				Team1: m.Team1,
+				Flag1: m.Flag1,
+				Team2: m.Team2,
+				Flag2: m.Flag2,
+				Date:  m.Date,
+				Time:  m.Time,
+				Group: m.Group,
+				Stage: "groups",
+			}); err != nil {
+				return err
+			}
+		}
 	}
 
-	for _, m := range groupStage {
+	return s.SeedKnockoutIfMissing()
+}
+
+// SeedKnockoutIfMissing inserta los 32 partidos de fases eliminatorias si aún no están en la BD.
+func (s *Store) SeedKnockoutIfMissing() error {
+	matches, err := s.GetAllMatches()
+	if err != nil {
+		return err
+	}
+	for _, m := range matches {
+		if m.Stage != "groups" {
+			return nil // ya existen partidos eliminatorios
+		}
+	}
+
+	for _, m := range knockoutStage {
 		id, err := newUUID()
 		if err != nil {
 			return err
 		}
 		if err := s.CreateMatch(model.Match{
-			ID:    id,
-			Team1: m.Team1,
-			Flag1: m.Flag1,
-			Team2: m.Team2,
-			Flag2: m.Flag2,
-			Date:  m.Date,
-			Time:  m.Time,
-			Group: m.Group,
-			Stage: "groups",
+			ID:        id,
+			Team1:     m.Team1,
+			Flag1:     m.Flag1,
+			Team2:     m.Team2,
+			Flag2:     m.Flag2,
+			Date:      m.Date,
+			Time:      m.Time,
+			Stage:     m.Stage,
+			Score1:    m.Score1,
+			Score2:    m.Score2,
+			Score1_90: m.Score1_90,
+			Score2_90: m.Score2_90,
+			Winner:    m.Winner,
+			Notes:     m.Notes,
+			Locked:    false,
 		}); err != nil {
 			return err
 		}
@@ -155,3 +442,4 @@ func newUUID() (string, error) {
 	return fmt.Sprintf("%08x-%04x-%04x-%04x-%012x",
 		b[0:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
 }
+

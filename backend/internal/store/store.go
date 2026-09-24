@@ -28,6 +28,10 @@ func New(dbPath string) (*Store, error) {
 	return s, nil
 }
 
+func addColumnIfNotExists(db *sql.DB, table, colDef string) {
+	_, _ = db.Exec(fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s", table, colDef))
+}
+
 func (s *Store) migrate() error {
 	_, err := s.db.Exec(`
 		CREATE TABLE IF NOT EXISTS matches (
@@ -42,28 +46,48 @@ func (s *Store) migrate() error {
 			stage      TEXT DEFAULT 'groups',
 			score1     INTEGER,
 			score2     INTEGER,
+			score1_90  INTEGER,
+			score2_90  INTEGER,
+			winner     TEXT DEFAULT '',
+			notes      TEXT DEFAULT '',
 			locked     INTEGER DEFAULT 0,
 			created_at TEXT DEFAULT (datetime('now'))
 		);
 
 		CREATE TABLE IF NOT EXISTS predictions (
-			user_id  TEXT NOT NULL,
-			match_id TEXT NOT NULL,
-			score1   INTEGER NOT NULL,
-			score2   INTEGER NOT NULL,
-			saved_at TEXT DEFAULT (datetime('now')),
+			user_id    TEXT NOT NULL,
+			match_id   TEXT NOT NULL,
+			type       TEXT DEFAULT '',
+			score1     INTEGER,
+			score2     INTEGER,
+			outcome_90 TEXT DEFAULT '',
+			qualifier  TEXT DEFAULT '',
+			saved_at   TEXT DEFAULT (datetime('now')),
 			PRIMARY KEY (user_id, match_id),
 			FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE
 		);
 	`)
-	return err
+	if err != nil {
+		return err
+	}
+
+	addColumnIfNotExists(s.db, "matches", "score1_90 INTEGER")
+	addColumnIfNotExists(s.db, "matches", "score2_90 INTEGER")
+	addColumnIfNotExists(s.db, "matches", "winner TEXT DEFAULT ''")
+	addColumnIfNotExists(s.db, "matches", "notes TEXT DEFAULT ''")
+
+	addColumnIfNotExists(s.db, "predictions", "type TEXT DEFAULT ''")
+	addColumnIfNotExists(s.db, "predictions", "outcome_90 TEXT DEFAULT ''")
+	addColumnIfNotExists(s.db, "predictions", "qualifier TEXT DEFAULT ''")
+
+	return nil
 }
 
 // GetAllMatches returns all matches ordered by date.
 func (s *Store) GetAllMatches() ([]model.Match, error) {
 	rows, err := s.db.Query(`
 		SELECT id, team1, flag1, team2, flag2, date, time, group_name, stage,
-		       score1, score2, locked, created_at
+		       score1, score2, score1_90, score2_90, COALESCE(winner, ''), COALESCE(notes, ''), locked, created_at
 		FROM matches
 		ORDER BY date, time, created_at
 	`)
@@ -79,7 +103,8 @@ func (s *Store) GetAllMatches() ([]model.Match, error) {
 		err := rows.Scan(
 			&m.ID, &m.Team1, &m.Flag1, &m.Team2, &m.Flag2,
 			&m.Date, &m.Time, &m.Group, &m.Stage,
-			&m.Score1, &m.Score2, &locked, &m.CreatedAt,
+			&m.Score1, &m.Score2, &m.Score1_90, &m.Score2_90,
+			&m.Winner, &m.Notes, &locked, &m.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -94,7 +119,7 @@ func (s *Store) GetAllMatches() ([]model.Match, error) {
 func (s *Store) GetMatch(id string) (model.Match, error) {
 	row := s.db.QueryRow(`
 		SELECT id, team1, flag1, team2, flag2, date, time, group_name, stage,
-		       score1, score2, locked, created_at
+		       score1, score2, score1_90, score2_90, COALESCE(winner, ''), COALESCE(notes, ''), locked, created_at
 		FROM matches WHERE id = ?
 	`, id)
 
@@ -103,7 +128,8 @@ func (s *Store) GetMatch(id string) (model.Match, error) {
 	err := row.Scan(
 		&m.ID, &m.Team1, &m.Flag1, &m.Team2, &m.Flag2,
 		&m.Date, &m.Time, &m.Group, &m.Stage,
-		&m.Score1, &m.Score2, &locked, &m.CreatedAt,
+		&m.Score1, &m.Score2, &m.Score1_90, &m.Score2_90,
+		&m.Winner, &m.Notes, &locked, &m.CreatedAt,
 	)
 	if err != nil {
 		return model.Match{}, err
@@ -114,31 +140,53 @@ func (s *Store) GetMatch(id string) (model.Match, error) {
 
 // CreateMatch inserts a new match.
 func (s *Store) CreateMatch(m model.Match) error {
+	lockedInt := 0
+	if m.Locked {
+		lockedInt = 1
+	}
 	_, err := s.db.Exec(`
-		INSERT INTO matches (id, team1, flag1, team2, flag2, date, time, group_name, stage)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`, m.ID, m.Team1, m.Flag1, m.Team2, m.Flag2, m.Date, m.Time, m.Group, m.Stage)
+		INSERT INTO matches (id, team1, flag1, team2, flag2, date, time, group_name, stage, score1, score2, score1_90, score2_90, winner, notes, locked)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, m.ID, m.Team1, m.Flag1, m.Team2, m.Flag2, m.Date, m.Time, m.Group, m.Stage,
+		m.Score1, m.Score2, m.Score1_90, m.Score2_90, m.Winner, m.Notes, lockedInt)
 	return err
 }
 
-// UpdateMatch updates score and/or locked status.
-func (s *Store) UpdateMatch(id string, score1, score2 *int, locked *bool) (model.Match, error) {
+// UpdateMatch updates score, 90min score, winner, notes and/or locked status.
+func (s *Store) UpdateMatch(id string, score1, score2, score1_90, score2_90 *int, winner, notes *string, locked *bool) (model.Match, error) {
+	query := "UPDATE matches SET id = id"
+	var args []any
+
 	if score1 != nil && score2 != nil {
-		_, err := s.db.Exec(`
-			UPDATE matches SET score1 = ?, score2 = ?, locked = 1 WHERE id = ?
-		`, *score1, *score2, id)
-		if err != nil {
-			return model.Match{}, err
-		}
-	} else if locked != nil {
+		query += ", score1 = ?, score2 = ?"
+		args = append(args, *score1, *score2)
+	}
+	if score1_90 != nil && score2_90 != nil {
+		query += ", score1_90 = ?, score2_90 = ?"
+		args = append(args, *score1_90, *score2_90)
+	}
+	if winner != nil {
+		query += ", winner = ?"
+		args = append(args, *winner)
+	}
+	if notes != nil {
+		query += ", notes = ?"
+		args = append(args, *notes)
+	}
+	if locked != nil {
 		val := 0
 		if *locked {
 			val = 1
 		}
-		_, err := s.db.Exec(`UPDATE matches SET locked = ? WHERE id = ?`, val, id)
-		if err != nil {
-			return model.Match{}, err
-		}
+		query += ", locked = ?"
+		args = append(args, val)
+	}
+
+	query += " WHERE id = ?"
+	args = append(args, id)
+
+	if _, err := s.db.Exec(query, args...); err != nil {
+		return model.Match{}, err
 	}
 	return s.GetMatch(id)
 }
@@ -159,7 +207,7 @@ func (s *Store) DeleteMatch(id string) error {
 // GetAllPredictions returns all predictions grouped by userID then matchID.
 func (s *Store) GetAllPredictions() (map[string]map[string]model.Prediction, error) {
 	rows, err := s.db.Query(`
-		SELECT user_id, match_id, score1, score2, saved_at FROM predictions
+		SELECT user_id, match_id, score1, score2, COALESCE(type, ''), COALESCE(outcome_90, ''), COALESCE(qualifier, ''), saved_at FROM predictions
 	`)
 	if err != nil {
 		return nil, err
@@ -173,8 +221,12 @@ func (s *Store) GetAllPredictions() (map[string]map[string]model.Prediction, err
 
 	for rows.Next() {
 		var p model.Prediction
-		if err := rows.Scan(&p.UserID, &p.MatchID, &p.Score1, &p.Score2, &p.SavedAt); err != nil {
+		if err := rows.Scan(&p.UserID, &p.MatchID, &p.Score1, &p.Score2, &p.Type, &p.Outcome90, &p.Qualifier, &p.SavedAt); err != nil {
 			return nil, err
+		}
+		if p.Type == "qualifier" || p.Type == "outcome_90" {
+			p.Score1 = nil
+			p.Score2 = nil
 		}
 		if _, ok := result[p.UserID]; ok {
 			result[p.UserID][p.MatchID] = p
@@ -185,9 +237,17 @@ func (s *Store) GetAllPredictions() (map[string]map[string]model.Prediction, err
 
 // UpsertPrediction inserts or replaces a prediction.
 func (s *Store) UpsertPrediction(p model.Prediction) error {
+	score1 := 0
+	score2 := 0
+	if p.Score1 != nil {
+		score1 = *p.Score1
+	}
+	if p.Score2 != nil {
+		score2 = *p.Score2
+	}
 	_, err := s.db.Exec(`
-		INSERT OR REPLACE INTO predictions (user_id, match_id, score1, score2, saved_at)
-		VALUES (?, ?, ?, ?, datetime('now'))
-	`, p.UserID, p.MatchID, p.Score1, p.Score2)
+		INSERT OR REPLACE INTO predictions (user_id, match_id, score1, score2, type, outcome_90, qualifier, saved_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+	`, p.UserID, p.MatchID, score1, score2, p.Type, p.Outcome90, p.Qualifier)
 	return err
 }

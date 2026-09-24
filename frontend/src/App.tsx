@@ -8,6 +8,7 @@ import { TabBar, type TabKey } from '@/components/TabBar'
 import { UserSelectModal } from '@/components/UserSelectModal'
 import { SkeletonCards } from '@/components/SkeletonCards'
 import { PrediccionesTab } from '@/components/tabs/PrediccionesTab'
+import { FaseFinalTab } from '@/components/tabs/FaseFinalTab'
 import { TablaTab } from '@/components/tabs/TablaTab'
 import { AdminTab } from '@/components/tabs/AdminTab'
 import { Button } from '@/components/ui/button'
@@ -27,8 +28,13 @@ function App() {
     const stored = localStorage.getItem(USER_KEY)
     return isUserId(stored) ? stored : null
   })
+<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState<TabKey>('predicciones')
   const [adminCode, setAdminCode] = useState<string | null>(null)
+=======
+  const [activeTab, setActiveTab] = useState<TabKey>('fase-final')
+  const [isAdminAuth, setIsAdminAuth] = useState(false)
+>>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
 
   const loadData = useCallback(async () => {
     try {
@@ -61,7 +67,7 @@ function App() {
   }
 
   return (
-    <div className="mx-auto min-h-svh w-full max-w-lg px-4 pb-16">
+    <div className={`mx-auto min-h-svh w-full px-4 pb-16 transition-all ${activeTab === 'fase-final' ? 'max-w-2xl' : 'max-w-lg'}`}>
       <Header selectedUser={selectedUser} onSelectUser={handleSelectUser} />
       <TabBar activeTab={activeTab} onChange={setActiveTab} />
 
@@ -81,6 +87,12 @@ function App() {
               data={data}
               selectedUser={selectedUser}
               onRefetch={loadData}
+            />
+          )}
+          {activeTab === 'fase-final' && (
+            <FaseFinalTab
+              data={data}
+              selectedUser={selectedUser}
             />
           )}
           {activeTab === 'tabla' && <TablaTab data={data} />}

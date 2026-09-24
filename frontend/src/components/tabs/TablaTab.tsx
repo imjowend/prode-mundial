@@ -109,21 +109,41 @@ export function TablaTab({ data }: TablaTabProps) {
                         </td>
                       )
                     }
-                    const { points, type } = calcMatchPoints(pred, {
-                      score1: match.score1 as number,
-                      score2: match.score2 as number,
-                    })
+                    const { points, type } = calcMatchPoints(pred, match)
                     const color =
                       type === 'exact'
-                        ? 'text-[var(--color-exact)]'
+                        ? 'text-emerald-400 font-bold'
                         : type === 'outcome'
-                          ? 'text-[var(--color-success)]'
-                          : 'text-[var(--color-danger)]'
+                          ? 'text-sky-400 font-bold'
+                          : type === 'qualifier'
+                            ? 'text-amber-400 font-bold'
+                            : 'text-zinc-500'
+
+                    let label = ''
+                    if (pred.type === 'qualifier') {
+                      label = pred.qualifier === 'team1' ? match.team1.slice(0, 4) : match.team2.slice(0, 4)
+                    } else if (pred.type === 'outcome_90') {
+                      label =
+                        pred.outcome90 === 'team1'
+                          ? match.team1.slice(0, 4)
+                          : pred.outcome90 === 'team2'
+                            ? match.team2.slice(0, 4)
+                            : 'Emp'
+                    } else {
+                      label = `${pred.score1}–${pred.score2}`
+                    }
+
                     return (
                       <td key={u.id} className={`whitespace-nowrap p-3 font-medium ${color}`}>
+<<<<<<< HEAD
                         {pred.score1}–{pred.score2}{' '}
                         <span className="text-xs">
                           ({points === 3 ? '+3' : points === 1 ? '+1' : '+0'})
+=======
+                        {label}{' '}
+                        <span className="text-xs font-mono">
+                          ({points > 0 ? `+${points}` : '0'})
+>>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
                         </span>
                       </td>
                     )
