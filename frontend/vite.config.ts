@@ -8,4 +8,10 @@ export default defineConfig({
   resolve: {
     alias: { '@': '/src' },
   },
+  // Dev: /api -> backend local, mismo camino relativo que el rewrite de vercel.json en producción.
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
 })

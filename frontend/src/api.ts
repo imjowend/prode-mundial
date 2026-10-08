@@ -1,6 +1,8 @@
 import type { AppData, Match, Outcome90, PredictionType, Qualifier, UserId } from '@/types'
 
-export const API_URL = import.meta.env.VITE_API_URL as string
+// Vacío o sin definir = rutas relativas (/api/...): en dev las proxea Vite y en
+// producción el rewrite de vercel.json. Igual que el build de producción.
+export const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 async function ensureOk(res: Response): Promise<Response> {
   if (!res.ok) {
