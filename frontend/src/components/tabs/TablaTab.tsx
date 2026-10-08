@@ -135,15 +135,9 @@ export function TablaTab({ data }: TablaTabProps) {
 
                     return (
                       <td key={u.id} className={`whitespace-nowrap p-3 font-medium ${color}`}>
-<<<<<<< HEAD
-                        {pred.score1}–{pred.score2}{' '}
-                        <span className="text-xs">
-                          ({points === 3 ? '+3' : points === 1 ? '+1' : '+0'})
-=======
                         {label}{' '}
                         <span className="text-xs font-mono">
                           ({points > 0 ? `+${points}` : '0'})
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
                         </span>
                       </td>
                     )

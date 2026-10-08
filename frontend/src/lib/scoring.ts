@@ -10,13 +10,6 @@ export function calcMatchPoints(
   pred?: Prediction | null,
   match?: Match | null,
 ): { points: number; type: PointType } {
-<<<<<<< HEAD
-  if (pred.score1 === result.score1 && pred.score2 === result.score2)
-    return { points: 3, type: 'exact' }
-  if (getOutcome(pred.score1, pred.score2) === getOutcome(result.score1, result.score2))
-    return { points: 1, type: 'outcome' }
-  return { points: 0, type: 'miss' }
-=======
   if (!pred || !match || match.score1 === null || match.score2 === null) {
     return { points: 0, type: 'pending' }
   }
@@ -75,5 +68,4 @@ export function calcMatchPoints(
       }
       return { points: 0, type: 'miss' }
   }
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
 }

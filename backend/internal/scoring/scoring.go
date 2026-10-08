@@ -16,11 +16,6 @@ func Outcome(s1, s2 int) string {
 	return "draw"
 }
 
-<<<<<<< HEAD
-func CalcMatchPoints(predS1, predS2, resS1, resS2 int) (points int, pointType string) {
-	if predS1 == resS1 && predS2 == resS2 {
-		return 3, "exact"
-=======
 // CalcMatchPoints evaluates points earned for a prediction on a given match.
 func CalcMatchPoints(pred model.Prediction, m model.Match) (points int, pointType string) {
 	if m.Stage == "groups" {
@@ -34,7 +29,6 @@ func CalcMatchPoints(pred model.Prediction, m model.Match) (points int, pointTyp
 			return 1, "outcome"
 		}
 		return 0, "miss"
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
 	}
 
 	// Knockout stage (Option B: Todo o nada)

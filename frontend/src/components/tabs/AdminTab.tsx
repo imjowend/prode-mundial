@@ -3,12 +3,8 @@ import { Lock, Unlock, Trash2, Edit2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import type { AppData, Match, Stage } from '@/types'
-<<<<<<< HEAD
 import { addMatch, updateMatch, deleteMatch } from '@/api'
-=======
-import { ADMIN_CODE, addMatch, updateMatch, deleteMatch } from '@/api'
 import { Flag } from '@/components/Flag'
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -275,8 +271,7 @@ function ManageMatches({
       {filteredMatches.length === 0 ? (
         <p className="text-sm text-[var(--color-muted)]">No hay partidos en esta categoría.</p>
       ) : (
-<<<<<<< HEAD
-        matches.map((match) => (
+        filteredMatches.map((match) => (
           <ManageMatchRow
             key={match.id}
             match={match}
@@ -284,10 +279,6 @@ function ManageMatches({
             onAuth={onAuth}
             onRefetch={onRefetch}
           />
-=======
-        filteredMatches.map((match) => (
-          <ManageMatchRow key={match.id} match={match} onRefetch={onRefetch} />
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
         ))
       )}
     </section>
@@ -373,22 +364,7 @@ function ManageMatchRow({
 
     setBusy(true)
     try {
-<<<<<<< HEAD
-      await updateMatch(adminCode, match.id, { score1: n1, score2: n2 })
-      await onRefetch()
-      toast.success('⚽ Resultado guardado')
-      setEditing(false)
-      setS1('')
-      setS2('')
-    } catch (err) {
-      if (isAuthError(err)) {
-        toast.error('❌ Código incorrecto')
-        onAuth(null)
-      } else {
-        toast.error('❌ Error al guardar')
-      }
-=======
-      await updateMatch(ADMIN_CODE, match.id, {
+      await updateMatch(adminCode, match.id, {
         score1: n1,
         score2: n2,
         score1_90: n1_90,
@@ -399,9 +375,13 @@ function ManageMatchRow({
       await onRefetch()
       toast.success('⚽ Resultado guardado')
       setEditing(false)
-    } catch {
-      toast.error('❌ Error al guardar')
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
+    } catch (err) {
+      if (isAuthError(err)) {
+        toast.error('❌ Código incorrecto')
+        onAuth(null)
+      } else {
+        toast.error('❌ Error al guardar')
+      }
     } finally {
       setBusy(false)
     }
