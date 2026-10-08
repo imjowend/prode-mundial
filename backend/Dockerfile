@@ -11,4 +11,8 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /app/server .
 EXPOSE 8080
+# Traefik no rutea a contenedores "starting"/"unhealthy": start-interval corto para que el
+# primer chequeo llegue rápido. /health no toca la DB. wget es el de busybox.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --start-interval=2s --retries=3 \
+  CMD wget -q --spider "http://127.0.0.1:${PORT:-8080}/health" || exit 1
 CMD ["./server"]
