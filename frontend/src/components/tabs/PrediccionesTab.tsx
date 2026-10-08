@@ -243,16 +243,17 @@ function MatchCard({ match, prediction, selectedUser, onRefetch }: MatchCardProp
   let statusNode: React.ReactNode = null
   if (hasResult && prediction) {
     const { type } = calcMatchPoints(prediction, match)
+    const isOutcome90 = isKnockout && prediction.type === 'outcome_90'
     const map = {
       exact: {
-        label: isKnockout ? 'Marcador exacto' : 'Marcador exacto',
+        label: 'Marcador exacto',
         color: 'text-emerald-400 font-bold',
-        pts: isKnockout ? '+3 pts' : '+4 pts',
+        pts: '+3 pts',
       },
       outcome: {
-        label: isKnockout ? 'Resultado en 90 mins' : 'Resultado correcto',
+        label: isOutcome90 ? 'Resultado en 90 mins' : 'Resultado correcto',
         color: 'text-sky-400 font-bold',
-        pts: isKnockout ? '+2 pts' : '+1 pt',
+        pts: isOutcome90 ? '+2 pts' : '+1 pt',
       },
       qualifier: {
         label: 'Clasificado acertado',

@@ -23,7 +23,7 @@ func CalcMatchPoints(pred model.Prediction, m model.Match) (points int, pointTyp
 			return 0, "pending"
 		}
 		if *pred.Score1 == *m.Score1 && *pred.Score2 == *m.Score2 {
-			return 4, "exact"
+			return 3, "exact"
 		}
 		if Outcome(*pred.Score1, *pred.Score2) == Outcome(*m.Score1, *m.Score2) {
 			return 1, "outcome"
@@ -63,11 +63,16 @@ func CalcMatchPoints(pred model.Prediction, m model.Match) (points int, pointTyp
 		return 0, "miss"
 
 	default:
-		// Fallback for legacy predictions with only Score1 and Score2:
-		if pred.Score1 != nil && pred.Score2 != nil && m.Score1 != nil && m.Score2 != nil {
-			if *pred.Score1 == *m.Score1 && *pred.Score2 == *m.Score2 {
-				return 3, "exact"
-			}
+		// Legacy predictions (type ''): same rule as before the knockout modes
+		// existed (exact 3, outcome 1), so already played matches keep their points.
+		if pred.Score1 == nil || pred.Score2 == nil || m.Score1 == nil || m.Score2 == nil {
+			return 0, "miss"
+		}
+		if *pred.Score1 == *m.Score1 && *pred.Score2 == *m.Score2 {
+			return 3, "exact"
+		}
+		if Outcome(*pred.Score1, *pred.Score2) == Outcome(*m.Score1, *m.Score2) {
+			return 1, "outcome"
 		}
 		return 0, "miss"
 	}

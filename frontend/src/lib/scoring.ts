@@ -19,7 +19,7 @@ export function calcMatchPoints(
       return { points: 0, type: 'pending' }
     }
     if (pred.score1 === match.score1 && pred.score2 === match.score2) {
-      return { points: 4, type: 'exact' }
+      return { points: 3, type: 'exact' }
     }
     if (getOutcome(pred.score1, pred.score2) === getOutcome(match.score1, match.score2)) {
       return { points: 1, type: 'outcome' }
@@ -58,13 +58,16 @@ export function calcMatchPoints(
       return { points: 0, type: 'miss' }
 
     default:
-      if (
-        pred.score1 != null &&
-        pred.score2 != null &&
-        pred.score1 === match.score1 &&
-        pred.score2 === match.score2
-      ) {
+      // Legacy predictions (type ''): same rule as before the knockout modes
+      // existed (exact 3, outcome 1), so already played matches keep their points.
+      if (pred.score1 == null || pred.score2 == null) {
+        return { points: 0, type: 'miss' }
+      }
+      if (pred.score1 === match.score1 && pred.score2 === match.score2) {
         return { points: 3, type: 'exact' }
+      }
+      if (getOutcome(pred.score1, pred.score2) === getOutcome(match.score1, match.score2)) {
+        return { points: 1, type: 'outcome' }
       }
       return { points: 0, type: 'miss' }
   }
