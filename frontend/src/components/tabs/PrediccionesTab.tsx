@@ -243,22 +243,17 @@ function MatchCard({ match, prediction, selectedUser, onRefetch }: MatchCardProp
   let statusNode: React.ReactNode = null
   if (hasResult && prediction) {
     const { type } = calcMatchPoints(prediction, match)
+    const isOutcome90 = isKnockout && prediction.type === 'outcome_90'
     const map = {
       exact: {
-<<<<<<< HEAD
         label: 'Marcador exacto',
-        color: 'text-[var(--color-exact)]',
-        pts: '+3 pts',
-=======
-        label: isKnockout ? 'Marcador exacto' : 'Marcador exacto',
         color: 'text-emerald-400 font-bold',
-        pts: isKnockout ? '+3 pts' : '+4 pts',
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
+        pts: '+3 pts',
       },
       outcome: {
-        label: isKnockout ? 'Resultado en 90 mins' : 'Resultado correcto',
+        label: isOutcome90 ? 'Resultado en 90 mins' : 'Resultado correcto',
         color: 'text-sky-400 font-bold',
-        pts: isKnockout ? '+2 pts' : '+1 pt',
+        pts: isOutcome90 ? '+2 pts' : '+1 pt',
       },
       qualifier: {
         label: 'Clasificado acertado',
@@ -270,17 +265,9 @@ function MatchCard({ match, prediction, selectedUser, onRefetch }: MatchCardProp
     } as const
     const info = map[type === 'pending' ? 'miss' : type]
     statusNode = (
-<<<<<<< HEAD
-      <div className="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
-        <span className={`text-xs font-medium ${info.color}`}>{info.label}</span>
-        <span className={`text-sm font-bold ${info.color}`}>
-          {points === 3 ? '+3 pts' : points === 1 ? '+1 pt' : '+0 pts'}
-        </span>
-=======
       <div className="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-3 text-xs">
         <span className={info.color}>{info.label}</span>
         <span className={info.color}>{info.pts}</span>
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
       </div>
     )
   } else if (prediction) {

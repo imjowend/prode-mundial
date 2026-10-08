@@ -374,7 +374,7 @@ export function FaseFinalTab({ data, selectedUser }: FaseFinalTabProps) {
                           )}
                           {pointResult.type === 'outcome' && (
                             <Badge className="bg-sky-500 text-black font-bold text-[10px]">
-                              +2 pts En 90'
+                              {userPred.type === 'outcome_90' ? "+2 pts En 90'" : '+1 pt Resultado'}
                             </Badge>
                           )}
                           {pointResult.type === 'qualifier' && (

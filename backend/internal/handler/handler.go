@@ -2,6 +2,7 @@ package handler
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -21,7 +22,17 @@ func New(s *store.Store, adminCode string) *Handler {
 	return &Handler{store: s, adminCode: adminCode}
 }
 
+// isAdmin reports whether code matches the configured admin code, comparing in
+// constant time. An empty code (sent or configured) never authorizes.
+func (h *Handler) isAdmin(code string) bool {
+	if code == "" || h.adminCode == "" {
+		return false
+	}
+	return subtle.ConstantTimeCompare([]byte(code), []byte(h.adminCode)) == 1
+}
+
 func (h *Handler) Routes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /health", h.health)
 	mux.HandleFunc("GET /api/data", h.getData)
 	mux.HandleFunc("POST /api/predictions", h.postPrediction)
 	mux.HandleFunc("POST /api/admin/matches", h.createMatch)
@@ -59,6 +70,13 @@ func isValidUser(userID string) bool {
 		}
 	}
 	return false
+}
+
+// ---- GET /health ------------------------------------------------------------
+
+// health reports that the process is up. It does not touch the DB.
+func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 // ---- GET /api/data ----------------------------------------------------------
@@ -211,7 +229,7 @@ func (h *Handler) createMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.AdminCode != h.adminCode {
+	if !h.isAdmin(body.AdminCode) {
 		errJSON(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
@@ -275,7 +293,7 @@ func (h *Handler) updateMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.AdminCode != h.adminCode {
+	if !h.isAdmin(body.AdminCode) {
 		errJSON(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
@@ -310,7 +328,7 @@ func (h *Handler) deleteMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.AdminCode != h.adminCode {
+	if !h.isAdmin(body.AdminCode) {
 		errJSON(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}

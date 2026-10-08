@@ -28,13 +28,8 @@ function App() {
     const stored = localStorage.getItem(USER_KEY)
     return isUserId(stored) ? stored : null
   })
-<<<<<<< HEAD
-  const [activeTab, setActiveTab] = useState<TabKey>('predicciones')
-  const [adminCode, setAdminCode] = useState<string | null>(null)
-=======
   const [activeTab, setActiveTab] = useState<TabKey>('fase-final')
-  const [isAdminAuth, setIsAdminAuth] = useState(false)
->>>>>>> ac47330 (feat: agregar fase clasificatoria, reglas de puntuación eliminatoria y vista interactiva de llaves)
+  const [adminCode, setAdminCode] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     try {
