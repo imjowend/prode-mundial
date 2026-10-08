@@ -52,6 +52,7 @@ archivo SQLite vive en un volumen Docker (`db_data`).
 
 | Método | Ruta                             | Descripción                                    |
 |--------|----------------------------------|------------------------------------------------|
+| GET    | `/health`                        | Health check (sin prefijo `/api`, no toca la DB) |
 | GET    | `/api/data`                      | Partidos + pronósticos + tabla de posiciones   |
 | POST   | `/api/predictions`               | Cargar/actualizar pronóstico de un usuario     |
 | POST   | `/api/admin/matches`             | Crear partido (requiere `adminCode`)           |

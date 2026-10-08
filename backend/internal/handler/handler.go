@@ -32,6 +32,7 @@ func (h *Handler) isAdmin(code string) bool {
 }
 
 func (h *Handler) Routes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /health", h.health)
 	mux.HandleFunc("GET /api/data", h.getData)
 	mux.HandleFunc("POST /api/predictions", h.postPrediction)
 	mux.HandleFunc("POST /api/admin/matches", h.createMatch)
@@ -69,6 +70,13 @@ func isValidUser(userID string) bool {
 		}
 	}
 	return false
+}
+
+// ---- GET /health ------------------------------------------------------------
+
+// health reports that the process is up. It does not touch the DB.
+func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 // ---- GET /api/data ----------------------------------------------------------
