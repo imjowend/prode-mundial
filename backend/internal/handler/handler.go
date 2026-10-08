@@ -2,6 +2,7 @@ package handler
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -19,6 +20,15 @@ type Handler struct {
 
 func New(s *store.Store, adminCode string) *Handler {
 	return &Handler{store: s, adminCode: adminCode}
+}
+
+// isAdmin reports whether code matches the configured admin code, comparing in
+// constant time. An empty code (sent or configured) never authorizes.
+func (h *Handler) isAdmin(code string) bool {
+	if code == "" || h.adminCode == "" {
+		return false
+	}
+	return subtle.ConstantTimeCompare([]byte(code), []byte(h.adminCode)) == 1
 }
 
 func (h *Handler) Routes(mux *http.ServeMux) {
@@ -211,7 +221,7 @@ func (h *Handler) createMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.AdminCode != h.adminCode {
+	if !h.isAdmin(body.AdminCode) {
 		errJSON(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
@@ -275,7 +285,7 @@ func (h *Handler) updateMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.AdminCode != h.adminCode {
+	if !h.isAdmin(body.AdminCode) {
 		errJSON(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}
@@ -310,7 +320,7 @@ func (h *Handler) deleteMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.AdminCode != h.adminCode {
+	if !h.isAdmin(body.AdminCode) {
 		errJSON(w, http.StatusUnauthorized, "unauthorized")
 		return
 	}

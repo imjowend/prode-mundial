@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -18,7 +19,7 @@ func main() {
 	_ = godotenv.Load()
 
 	port := getenv("PORT", "8080")
-	adminCode := getenv("ADMIN_CODE", "")
+	adminCode := mustGetEnv("ADMIN_CODE")
 	dbPath := getenv("DB_PATH", "./prode.db")
 
 	s, err := store.New(dbPath)
@@ -50,6 +51,15 @@ func getenv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// mustGetEnv returns the value of key and stops the process if it is missing or blank.
+func mustGetEnv(key string) string {
+	v := os.Getenv(key)
+	if strings.TrimSpace(v) == "" {
+		log.Fatalf("required env var %s is missing or empty", key)
+	}
+	return v
 }
 
 // loggerMiddleware logs method, path, status and duration for each request.
