@@ -6,8 +6,7 @@ partidos desde una pestaña de admin. Consume la API del backend en Go.
 
 ## Requisitos
 
-- **Node.js 20.19+ o 22.12+** (requerido por Vite 8). La imagen Docker buildea con
-  `node:23-alpine`.
+- **Node.js 20.19+ o 22.12+** (requerido por Vite 8).
   <!-- TODO: confirmar versión exacta; no hay campo `engines` en package.json -->
 - **pnpm** (hay `pnpm-lock.yaml` en el repo)
 
@@ -44,14 +43,11 @@ pnpm dev        # servidor de desarrollo (Vite, HMR); necesita el backend en :80
 ## Cómo pega al backend
 
 Este proyecto **no usa** rewrites de Next.js. El destino del backend se resuelve por
-`VITE_API_URL`. Hay dos escenarios de deploy soportados:
+`VITE_API_URL` (vacío = rutas relativas `/api/...`), que se resuelven así:
 
 - **Dev local:** `server.proxy` de `vite.config.ts` reenvía `/api` → `http://localhost:8080`.
 - **Vercel:** `vercel.json` define un rewrite de `/api/:path*` →
   `https://prode-api.joaquinvasquez.com/api/:path*` (más un fallback SPA a `/`).
-- **Docker + nginx:** el `Dockerfile` buildea con `VITE_API_URL=""` (URLs relativas) y
-  `nginx.conf` proxea `location /api/` → `http://backend:8080`, sirviendo la SPA para
-  el resto de las rutas.
 
 La pestaña de admin pide un código que el usuario tipea en el login (`AdminLogin`,
 sin persistir entre refreshes) y que se envía en cada mutación; el backend es la
