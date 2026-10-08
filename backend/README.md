@@ -15,13 +15,13 @@ por acertar el resultado (ganador/empate).
 
 ## Variables de entorno
 
-Carga un `.env` si existe (vía `godotenv`). Todas tienen valor por defecto:
+Carga un `.env` si existe (vía `godotenv`):
 
 | Variable     | Requerida | Propósito                                                   |
 |--------------|-----------|-------------------------------------------------------------|
 | `PORT`       | no        | Puerto HTTP de escucha (default `8080`)                     |
 | `DB_PATH`    | no        | Ruta del archivo SQLite (default `./prode.db`)              |
-| `ADMIN_CODE` | no        | Código que valida las mutaciones de admin (default vacío)   |
+| `ADMIN_CODE` | **sí**    | Secreto que valida las mutaciones de admin. Sin default: si falta o está vacío, el proceso no arranca. Largo y aleatorio |
 
 > `.env.example` solo incluye `ADMIN_CODE`. En producción, `PORT` y `DB_PATH` se
 > setean vía `environment` en `docker-compose.yml` (`DB_PATH=/data/prode.db` sobre un
