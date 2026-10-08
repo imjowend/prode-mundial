@@ -1,0 +1,36 @@
+#!/bin/sh
+# pre-push: frena el push si el árbol tiene marcadores de conflicto o no compila.
+# Activar una vez por clon:   git config core.hooksPath .githooks
+# Saltear en una emergencia:  git push --no-verify
+#
+# Chequea el working tree (no los commits a pushear): si hay cambios sin
+# commitear, el resultado puede no reflejar lo que se pushea.
+
+set -u
+ROOT=$(git rev-parse --show-toplevel) || exit 1
+cd "$ROOT" || exit 1
+
+fail() {
+	printf '\n✗ pre-push: %s\n  (saltear con: git push --no-verify)\n' "$1" >&2
+	exit 1
+}
+
+if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+	echo "⚠ pre-push: hay cambios sin commitear; se chequea el working tree, no lo que se pushea." >&2
+fi
+
+echo "→ marcadores de conflicto"
+if git grep -nE '^(<<<<<<<|>>>>>>>) ' -- . ':!.githooks/'; then
+	fail "hay marcadores de conflicto en archivos trackeados (ver arriba)"
+fi
+
+echo "→ go build ./... (backend)"
+(cd backend && go build ./...) || fail "el backend no compila"
+
+echo "→ tsc -b (mismo chequeo que corre pnpm build) (frontend)"
+TSC=frontend/node_modules/.bin/tsc
+[ -x "$TSC" ] || fail "falta frontend/node_modules: corré 'pnpm install --frozen-lockfile' en frontend/"
+# tsc directo (no 'pnpm exec'), para que pnpm no auto-instale ni toque el lockfile.
+(cd frontend && ./node_modules/.bin/tsc -b) || fail "el frontend tiene errores de tipos"
+
+echo "✓ pre-push OK"
